@@ -1,0 +1,586 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f5f6fa; font-family: 'Inter', sans-serif; color: #1a1a1a; min-height: 100vh; }
+  .header-banner {
+    width: 100%; background: linear-gradient(135deg, #8b0000 0%, #c0001a 40%, #9b0000 70%, #5a0000 100%);
+    padding: 18px 40px; display: flex; align-items: center; justify-content: center; gap: 22px; position: relative; overflow: hidden;
+  }
+  .header-banner::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 50%, rgba(255,80,80,0.18) 0%, transparent 60%), radial-gradient(ellipse at 80% 50%, rgba(0,0,0,0.25) 0%, transparent 60%); pointer-events: none; }
+  .shield-wrap { width: 72px; height: 72px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 3px solid rgba(255,255,255,0.6); box-shadow: 0 0 0 6px rgba(255,255,255,0.15); position: relative; z-index: 1; }
+  .shield-inner { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, #8b0000, #c0001a); display: flex; align-items: center; justify-content: center; font-size: 26px; }
+  .header-text { position: relative; z-index: 1; }
+  .header-text h1 { font-family: 'Merriweather', serif; font-size: 28px; font-weight: 900; color: #fff; letter-spacing: 0.5px; line-height: 1.1; }
+  .header-text .subtitle-real { font-size: 12px; color: rgba(255,255,255,0.75); letter-spacing: 2.5px; text-transform: uppercase; margin-top: 5px; font-weight: 500; }
+  .live-badge { display: flex; align-items: center; gap: 7px; padding: 6px 14px; border: 1px solid rgba(255,255,255,0.4); border-radius: 20px; background: rgba(255,255,255,0.12); font-size: 12px; color: #fff; font-weight: 600; }
+  .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+  .app { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+  .stat-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 12px; padding: 16px 18px; border-top: 3px solid var(--accent-color, #8b0000); box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .stat-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 600; }
+  .stat-value { font-size: 26px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--accent-color, #8b0000); }
+  .stat-sub { font-size: 11px; color: #aaa; margin-top: 3px; }
+  .main-grid { display: grid; grid-template-columns: 390px 1fr; gap: 20px; margin-bottom: 20px; }
+  .panel { background: #fff; border: 1px solid #e8e8e8; border-radius: 14px; padding: 22px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
+  .panel-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #8b0000; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .panel-title::before { content: ''; width: 3px; height: 14px; border-radius: 2px; background: #8b0000; display: inline-block; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 11px; color: #777; margin-bottom: 5px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+  .field select, .field input { width: 100%; padding: 9px 13px; background: #fafafa; border: 1px solid #ddd; border-radius: 8px; color: #1a1a1a; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s; }
+  .field select:focus, .field input:focus { border-color: #8b0000; background: #fff; }
+  .students-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .students-header span { font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .quick-btns { display: flex; gap: 5px; }
+  .quick-btn { padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; border: 1px solid; transition: all 0.2s; font-family: 'Inter', sans-serif; font-weight: 600; }
+  .q-present { border-color: #16a34a; color: #16a34a; background: #f0fdf4; }
+  .q-absent { border-color: #dc2626; color: #dc2626; background: #fef2f2; }
+  .q-present:hover { background: #dcfce7; }
+  .q-absent:hover { background: #fee2e2; }
+  .student-list { display: flex; flex-direction: column; gap: 5px; max-height: 340px; overflow-y: auto; padding-right: 2px; }
+  .student-list::-webkit-scrollbar { width: 4px; }
+  .student-list::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+  .student-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #fafafa; border: 1px solid #eee; border-radius: 9px; transition: all 0.15s; }
+  .student-row:hover { background: #fff5f5; border-color: #f0c0c0; }
+  .student-avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .student-name { flex: 1; font-size: 13px; font-weight: 500; color: #1a1a1a; }
+  .student-roll { font-size: 10px; color: #aaa; font-family: 'JetBrains Mono', monospace; }
+  .att-toggle { display: flex; gap: 3px; }
+  .att-btn { width: 34px; height: 26px; border-radius: 6px; border: 1px solid; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s; font-family: 'Inter', sans-serif; }
+  .att-p { border-color: #86efac; color: #16a34a; background: #fff; }
+  .att-a { border-color: #fca5a5; color: #dc2626; background: #fff; }
+  .att-l { border-color: #fcd34d; color: #d97706; background: #fff; }
+  .att-p.active { background: #dcfce7; border-color: #16a34a; }
+  .att-a.active { background: #fee2e2; border-color: #dc2626; }
+  .att-l.active { background: #fef9c3; border-color: #d97706; }
+  .submit-btn { width: 100%; margin-top: 18px; padding: 13px; border-radius: 10px; border: none; background: linear-gradient(135deg, #8b0000, #c0001a); color: white; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; letter-spacing: 0.5px; transition: opacity 0.2s; box-shadow: 0 4px 14px rgba(139,0,0,0.35); }
+  .submit-btn:hover { opacity: 0.9; }
+  .submit-btn:active { transform: scale(0.99); }
+  .records-toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .filter-btn { padding: 6px 14px; border-radius: 7px; border: 1px solid #ddd; background: #fafafa; color: #666; font-size: 12px; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; font-weight: 600; }
+  .filter-btn:hover, .filter-btn.active { border-color: #8b0000; color: #8b0000; background: #fff5f5; }
+  .export-btn { margin-left: auto; padding: 6px 18px; border-radius: 7px; border: 1px solid #16a34a; background: #f0fdf4; color: #16a34a; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+  .export-btn:hover { background: #dcfce7; }
+  .records-table { overflow: auto; }
+  .records-table table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .records-table th { padding: 8px 12px; text-align: left; font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #f0f0f0; font-weight: 700; }
+  .records-table td { padding: 10px 12px; border-bottom: 1px solid #f5f5f5; color: #333; }
+  .records-table tr:hover td { background: #fafafa; }
+  .badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .badge-p { background: #dcfce7; color: #16a34a; }
+  .badge-a { background: #fee2e2; color: #dc2626; }
+  .badge-l { background: #fef9c3; color: #d97706; }
+  .badge-sub { background: #fff5f5; color: #8b0000; border: 1px solid #fecaca; }
+  .empty-state { text-align: center; padding: 50px 20px; color: #bbb; }
+  .empty-state p { font-size: 14px; }
+  .bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .chart-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .chart-bar-label { width: 100px; font-size: 11px; color: #888; text-align: right; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chart-bar-track { flex: 1; height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden; }
+  .chart-bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+  .chart-bar-pct { width: 36px; font-size: 12px; font-family: 'JetBrains Mono', monospace; color: #333; font-weight: 600; }
+  .activity-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f5f5f5; }
+  .activity-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+  .activity-text { font-size: 13px; color: #333; }
+  .activity-time { font-size: 11px; color: #aaa; font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(3px); opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+  .modal-backdrop.open { opacity: 1; pointer-events: all; }
+  .modal { background: #fff; border-radius: 16px; padding: 30px; width: 460px; max-width: 95vw; transform: scale(0.92); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+  .modal-backdrop.open .modal { transform: scale(1); }
+  .modal h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; color: #8b0000; }
+  .modal p { color: #666; font-size: 14px; margin-bottom: 22px; line-height: 1.6; }
+  .modal-actions { display: flex; gap: 10px; }
+  .modal-cancel { flex: 1; padding: 11px; border-radius: 9px; border: 1px solid #ddd; background: #fafafa; color: #555; font-size: 14px; cursor: pointer; font-family: 'Inter', sans-serif; }
+  .modal-confirm { flex: 2; padding: 11px; border-radius: 9px; border: none; background: linear-gradient(135deg, #8b0000, #c0001a); color: white; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; }
+  .toast { position: fixed; bottom: 24px; right: 24px; z-index: 999; background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 14px 20px; display: flex; align-items: center; gap: 10px; font-size: 14px; min-width: 260px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); transform: translateY(80px); opacity: 0; transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1); pointer-events: none; color: #333; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+</style>
+
+<!-- HEADER -->
+<div class="header-banner">
+  <div class="shield-wrap">
+    <div class="shield-inner">🎓</div>
+  </div>
+  <div class="header-text">
+    <h1>Central Research Facility</h1>
+    <div class="subtitle-real">Attendance Management System</div>
+  </div>
+  <div style="position:absolute;right:32px;top:50%;transform:translateY(-50%);">
+    <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+  </div>
+</div>
+
+<!-- GOOGLE SHEETS CONFIG BAR -->
+<div id="gs-config-bar" style="background:#fff;border-bottom:1px solid #e8e8e8;padding:10px 40px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+  <span style="font-size:12px;font-weight:700;color:#333;white-space:nowrap;">🟢 Google Sheets</span>
+  <input id="gs-url-input" type="text" placeholder="Paste your Apps Script Web App URL here…"
+    style="flex:1;min-width:260px;padding:7px 12px;border:1px solid #ddd;border-radius:7px;font-size:12px;font-family:'Inter',sans-serif;outline:none;color:#1a1a1a;background:#fafafa;" />
+  <button onclick="saveSheetConfig()" style="padding:7px 16px;border-radius:7px;border:none;background:linear-gradient(135deg,#8b0000,#c0001a);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;">Save URL</button>
+  <span id="gs-status" style="font-size:11px;color:#aaa;white-space:nowrap;">Not configured</span>
+  <button onclick="toggleConfigHelp()" style="padding:5px 10px;border-radius:6px;border:1px solid #ddd;background:#fafafa;color:#666;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;">? Setup Guide</button>
+</div>
+
+<!-- SETUP GUIDE (collapsible) -->
+<div id="gs-help" style="display:none;background:#fffbea;border-bottom:1px solid #fde68a;padding:16px 40px;">
+  <div style="max-width:800px;margin:0 auto;">
+    <p style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:10px;">📋 How to connect Google Sheets (one-time setup):</p>
+    <ol style="font-size:12px;color:#555;line-height:2;padding-left:18px;">
+      <li>Open <strong>Google Sheets</strong> → create a new sheet and name it <strong>Attendance</strong>.</li>
+      <li>Go to <strong>Extensions → Apps Script</strong>, paste the <strong>Apps Script code</strong> below, and click Save.</li>
+      <li>Click <strong>Deploy → New Deployment → Web App</strong>. Set <em>"Who has access"</em> to <strong>Anyone</strong>. Copy the URL.</li>
+      <li>Paste the URL above and click <strong>Save URL</strong>.</li>
+      <li>On first submit, Google will ask you to <strong>authorize</strong> — click Allow.</li>
+    </ol>
+    <p style="font-size:12px;font-weight:700;color:#92400e;margin-top:12px;margin-bottom:6px;">Apps Script Code — paste this in your Google Apps Script editor:</p>
+    <pre id="apps-script-code" style="background:#1e1e2e;color:#cdd6f4;padding:14px 16px;border-radius:8px;font-size:11px;overflow-x:auto;line-height:1.7;white-space:pre;">function doPost(e) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    // ── Sheet 1: Session Summary ──────────────────────────────────
+    var sheet1 = ss.getSheetByName("Session Summary") || ss.insertSheet("Session Summary");
+    if (sheet1.getLastRow() === 0) {
+      sheet1.appendRow(["#","Faculty","Subject","Class/Batch","Date","Time",
+                        "Present","Absent","Leave","Total","Attendance %"]);
+    }
+
+    // ── Sheet 2: Student Detail ───────────────────────────────────
+    var sheet2 = ss.getSheetByName("Student Detail") || ss.insertSheet("Student Detail");
+    if (sheet2.getLastRow() === 0) {
+      sheet2.appendRow(["Session #","Roll No","Student Name","Faculty",
+                        "Subject","Class/Batch","Date","Status"]);
+    }
+
+    var data = JSON.parse(e.postData.contents);
+    var d    = new Date(data.date);
+    var dateStr = Utilities.formatDate(d, Session.getScriptTimeZone(), "dd/MM/yyyy");
+    var timeStr = Utilities.formatDate(d, Session.getScriptTimeZone(), "HH:mm");
+    var sessionId = "#" + String(data.id).padStart(3,"0");
+
+    sheet1.appendRow([sessionId, data.faculty, data.subject, data.cls,
+                      dateStr, timeStr, data.present, data.absent,
+                      data.leave, data.total, data.pct + "%"]);
+
+    data.studentData.forEach(function(sd) {
+      sheet2.appendRow([sessionId, sd.roll, sd.name, data.faculty,
+                        data.subject, data.cls, dateStr,
+                        sd.status === "P" ? "Present" : sd.status === "A" ? "Absent" : "Leave"]);
+    });
+
+    return ContentService
+      .createTextOutput(JSON.stringify({status:"ok"}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({status:"error", message: err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+</pre>
+    <button onclick="copyAppsScript()" style="margin-top:8px;padding:6px 14px;border-radius:6px;border:1px solid #d97706;background:#fffbea;color:#92400e;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">📋 Copy Apps Script Code</button>
+  </div>
+</div>
+
+<div class="app">
+  <div class="stats-row">
+    <div class="stat-card" style="--accent-color:#8b0000;">
+      <div class="stat-label">Total Sessions</div>
+      <div class="stat-value" id="stat-total">0</div>
+      <div class="stat-sub">Records saved</div>
+    </div>
+    <div class="stat-card" style="--accent-color:#16a34a;">
+      <div class="stat-label">Avg Attendance</div>
+      <div class="stat-value" id="stat-avg" style="color:#16a34a">—%</div>
+      <div class="stat-sub">Across all classes</div>
+    </div>
+    <div class="stat-card" style="--accent-color:#1d4ed8;">
+      <div class="stat-label">Active Faculty</div>
+      <div class="stat-value" id="stat-faculty" style="color:#1d4ed8">0</div>
+      <div class="stat-sub">Submitted today</div>
+    </div>
+    <div class="stat-card" style="--accent-color:#d97706;">
+      <div class="stat-label">Students Tracked</div>
+      <div class="stat-value" id="stat-students" style="color:#d97706">0</div>
+      <div class="stat-sub">Total entries</div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <div class="panel">
+      <div class="panel-title">Faculty Attendance Form</div>
+      <div class="field">
+        <label>Faculty Name</label>
+        <select id="faculty-select">
+          <option value="">— Select Faculty —</option>
+          <option>Prof. Jyoti Batra</option>
+          <option>Mr. Jatin Khudania</option>
+          <option>Dr. Gunjan Uttam</option>
+          <option>Dr. Dakshina Bisht</option>
+          <option>Dr. Shuvojit Moulik</option>
+          <option>Dr. Lokesh Chandra</option>
+          <option>Dr. Mottar Raza Rizvi</option>
+          <option>Dr. Amod Kumar Singh</option>
+          <option>Dr. Ashok Kumar (H.O.D General Medicine)</option>
+          <option>Dr. Alpana Agrawal</option>
+          <option>Dr. Deepika Agrawal</option>
+          <option>Dr. Vinod Kumar</option>
+          <option>Dr. Abhishek Pandey</option>
+          <option>Dr. Akshay Bhargava</option>
+          <option>Dr. Sanchita Mishra</option>
+          <option>Dr. Sayantani</option>
+          <option>Dr. Mayurika Tyagi</option>
+          <option>Dr. Deb Priya Sarkar</option>
+          <option>Mr. Ramu P.</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Subject / Course Code</label>
+        <input type="text" id="subject-input" placeholder="e.g. GM401 – General Medicine" />
+      </div>
+      <div class="field">
+        <label>Class / Batch</label>
+        <select id="class-select">
+          <option value="">— Select Class —</option>
+          <option>PG Year 1 – Section A</option>
+          <option>PG Year 1 – Section B</option>
+          <option>PG Year 2 – Section A</option>
+          <option>PG Year 2 – Section B</option>
+          <option>MPhil Research Batch</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Date & Time</label>
+        <input type="datetime-local" id="date-input" />
+      </div>
+      <div class="students-header">
+        <span>Mark Attendance (20 Students)</span>
+        <div class="quick-btns">
+          <button class="quick-btn q-present" onclick="markAll('P')">All P</button>
+          <button class="quick-btn q-absent" onclick="markAll('A')">All A</button>
+        </div>
+      </div>
+      <div class="student-list" id="student-list"></div>
+      <button class="submit-btn" onclick="submitAttendance()">Submit Attendance →</button>
+    </div>
+
+    <div class="panel" style="display:flex;flex-direction:column;">
+      <div class="panel-title">Attendance Records</div>
+      <div class="records-toolbar">
+        <button class="filter-btn active" onclick="filterRecords('all',this)">All</button>
+        <button class="filter-btn" onclick="filterRecords('today',this)">Today</button>
+        <button class="export-btn" onclick="exportToExcel()">⬇ Export Excel</button>
+      </div>
+      <div class="records-table" id="records-container">
+        <div class="empty-state"><p>No records yet.<br>Submit attendance using the form.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-row">
+    <div class="panel">
+      <div class="panel-title">Faculty Analytics</div>
+      <div id="analytics-content">
+        <div class="empty-state" style="padding:30px 0;"><p style="font-size:13px">Analytics will appear after submissions</p></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Activity Feed</div>
+      <div id="activity-feed">
+        <div class="empty-state" style="padding:30px 0;"><p style="font-size:13px">Faculty submissions will appear here</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="confirm-modal">
+  <div class="modal">
+    <h2>Confirm Submission</h2>
+    <p id="modal-summary"></p>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-confirm" onclick="confirmSubmit()">Confirm & Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <span id="toast-text">Done!</span>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ── Google Sheets Integration ──────────────────────────────────────────
+let gsWebAppUrl = localStorage.getItem('gs_web_app_url') || '';
+
+function saveSheetConfig() {
+  const url = document.getElementById('gs-url-input').value.trim();
+  if (!url.startsWith('https://script.google.com/')) {
+    showToast('⚠ Please enter a valid Apps Script URL');
+    return;
+  }
+  gsWebAppUrl = url;
+  localStorage.setItem('gs_web_app_url', url);
+  updateGsStatus('connected');
+  showToast('✓ Google Sheets URL saved!');
+}
+
+function updateGsStatus(state) {
+  const el = document.getElementById('gs-status');
+  if (state === 'connected')  { el.textContent = '✓ Connected'; el.style.color = '#16a34a'; }
+  else if (state === 'sending') { el.textContent = '⏳ Sending…'; el.style.color = '#d97706'; }
+  else if (state === 'error')   { el.textContent = '✗ Sync failed'; el.style.color = '#dc2626'; }
+  else                          { el.textContent = 'Not configured'; el.style.color = '#aaa'; }
+}
+
+function toggleConfigHelp() {
+  const h = document.getElementById('gs-help');
+  h.style.display = h.style.display === 'none' ? 'block' : 'none';
+}
+
+function copyAppsScript() {
+  const code = document.getElementById('apps-script-code').textContent;
+  navigator.clipboard.writeText(code).then(() => showToast('✓ Apps Script code copied!'));
+}
+
+async function syncToGoogleSheets(rec) {
+  if (!gsWebAppUrl) return; // silently skip if not configured
+  updateGsStatus('sending');
+  try {
+    await fetch(gsWebAppUrl, {
+      method: 'POST',
+      mode: 'no-cors',        // Apps Script doesn't set CORS headers on redirects
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(rec)
+    });
+    // no-cors means we can't read the response, assume success
+    updateGsStatus('connected');
+    showToast('✓ Synced to Google Sheets!');
+  } catch (err) {
+    updateGsStatus('error');
+    showToast('⚠ Google Sheets sync failed');
+    console.error('GS sync error:', err);
+  }
+}
+
+// Restore URL on load
+(function restoreGsUrl() {
+  if (gsWebAppUrl) {
+    document.getElementById('gs-url-input').value = gsWebAppUrl;
+    updateGsStatus('connected');
+  }
+})();
+// ───────────────────────────────────────────────────────────────────────
+
+const students = [
+  {id:'ST001', name:'Anushree Tripathi'},
+  {id:'ST002', name:'Saloni Martolia'},
+  {id:'ST003', name:'Priya Tomar'},
+  {id:'ST004', name:'Rajneesh Dutt'},
+  {id:'ST005', name:'Gauri Mudgal'},
+  {id:'ST006', name:'Urvashi Sharma'},
+  {id:'ST007', name:'Nikunj Moudgil'},
+  {id:'ST008', name:'Himani Chaudhary'},
+  {id:'ST009', name:'Dixit Saini'},
+  {id:'ST010', name:'Rishika'},
+  {id:'ST011', name:'Abhay Kumar'},
+  {id:'ST012', name:'Mukesh Chand'},
+  {id:'ST013', name:'Kriti Agarwal'},
+  {id:'ST014', name:'Manu Kumari'},
+  {id:'ST015', name:'Shivangini Sharma'},
+  {id:'ST016', name:'Dr. Nusrat Nabi'},
+  {id:'ST017', name:'Itisha Srivastava'},
+  {id:'ST018', name:'Aruna Maurya'},
+  {id:'ST019', name:'Muneeb Kosvi'},
+  {id:'ST020', name:'Kuldeep Verma'}
+];
+
+const avatarColors = ['#8b0000','#1d4ed8','#16a34a','#d97706','#7c3aed','#be185d','#0e7490','#b45309','#065f46','#1e3a5f'];
+const attendance = {};
+const records = [];
+let pendingSubmission = null;
+
+function initStudents() {
+  students.forEach(s => attendance[s.id] = 'P');
+  document.getElementById('student-list').innerHTML = students.map((s,i) => `
+    <div class="student-row">
+      <div class="student-avatar" style="background:${avatarColors[i%avatarColors.length]}18;color:${avatarColors[i%avatarColors.length]}">
+        ${s.name.split(' ').map(n=>n[0]).join('').slice(0,2)}
+      </div>
+      <div style="flex:1">
+        <div class="student-name">${s.name}</div>
+        <div class="student-roll">${s.id}</div>
+      </div>
+      <div class="att-toggle">
+        <button class="att-btn att-p active" id="btn-${s.id}-P" onclick="setAtt('${s.id}','P')">P</button>
+        <button class="att-btn att-a" id="btn-${s.id}-A" onclick="setAtt('${s.id}','A')">A</button>
+        <button class="att-btn att-l" id="btn-${s.id}-L" onclick="setAtt('${s.id}','L')">L</button>
+      </div>
+    </div>`).join('');
+}
+
+function setAtt(id, st) {
+  attendance[id] = st;
+  ['P','A','L'].forEach(s => document.getElementById(`btn-${id}-${s}`).classList.toggle('active', s===st));
+}
+function markAll(st) { students.forEach(s => setAtt(s.id, st)); }
+
+function submitAttendance() {
+  const faculty = document.getElementById('faculty-select').value;
+  const subject = document.getElementById('subject-input').value.trim();
+  const cls = document.getElementById('class-select').value;
+  const date = document.getElementById('date-input').value;
+  if (!faculty || !subject || !cls || !date) { showToast('⚠ Please fill all fields'); return; }
+  const p = students.filter(s=>attendance[s.id]==='P').length;
+  const a = students.filter(s=>attendance[s.id]==='A').length;
+  const l = students.filter(s=>attendance[s.id]==='L').length;
+  pendingSubmission = {faculty, subject, cls, date, p, a, l, att:{...attendance}};
+  document.getElementById('modal-summary').textContent = `${faculty} · ${cls} · ${p} Present, ${a} Absent, ${l} Leave`;
+  document.getElementById('confirm-modal').classList.add('open');
+}
+function closeModal() { document.getElementById('confirm-modal').classList.remove('open'); }
+
+function confirmSubmit() {
+  closeModal();
+  const d = pendingSubmission;
+  const rec = {
+    id: records.length+1, faculty: d.faculty, subject: d.subject,
+    cls: d.cls, date: d.date, present: d.p, absent: d.a, leave: d.l,
+    total: students.length, pct: Math.round((d.p/students.length)*100),
+    studentData: students.map(s=>({roll:s.id, name:s.name, status:d.att[s.id]}))
+  };
+  records.push(rec);
+  addActivity(rec); updateStats(); renderRecords(); updateAnalytics();
+  showToast('✓ Attendance saved successfully!');
+  syncToGoogleSheets(rec);   // 🟢 push to Google Sheets
+  markAll('P');
+}
+
+function addActivity(r) {
+  const feed = document.getElementById('activity-feed');
+  if (feed.querySelector('.empty-state')) feed.innerHTML = '';
+  const el = document.createElement('div');
+  el.className = 'activity-item';
+  const t = new Date(r.date).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  el.innerHTML = `
+    <div class="activity-dot" style="background:${r.pct>=75?'#16a34a':'#dc2626'}"></div>
+    <div style="flex:1">
+      <div class="activity-text">${r.faculty} · <span style="color:#8b0000;font-weight:600">${r.cls}</span></div>
+      <div class="activity-time">${t} · ${r.pct}% · ${r.present}P / ${r.absent}A / ${r.leave}L</div>
+    </div>`;
+  feed.insertBefore(el, feed.firstChild);
+}
+
+function updateStats() {
+  document.getElementById('stat-total').textContent = records.length;
+  const avg = records.length ? Math.round(records.reduce((a,r)=>a+r.pct,0)/records.length) : null;
+  document.getElementById('stat-avg').textContent = avg!==null ? avg+'%' : '—%';
+  document.getElementById('stat-faculty').textContent = new Set(records.map(r=>r.faculty)).size;
+  document.getElementById('stat-students').textContent = records.reduce((a,r)=>a+r.total,0);
+}
+
+let currentFilter = 'all';
+function filterRecords(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); renderRecords();
+}
+
+function renderRecords() {
+  const c = document.getElementById('records-container');
+  let filtered = currentFilter==='today'
+    ? records.filter(r=>new Date(r.date).toDateString()===new Date().toDateString())
+    : records;
+  if (!filtered.length) { c.innerHTML='<div class="empty-state"><p>No records for this filter.</p></div>'; return; }
+  c.innerHTML = `<table>
+    <thead><tr><th>#</th><th>Faculty</th><th>Subject</th><th>Class</th><th>Date</th><th>P</th><th>A</th><th>L</th><th>Rate</th></tr></thead>
+    <tbody>${[...filtered].reverse().map(r=>`<tr>
+      <td style="color:#aaa;font-family:'JetBrains Mono',monospace;font-size:11px">#${String(r.id).padStart(3,'0')}</td>
+      <td style="font-weight:600;font-size:12px">${r.faculty.replace('H.O.D General Medicine','HOD').split(' ').slice(0,3).join(' ')}</td>
+      <td><span class="badge badge-sub">${r.subject.split('–')[0].trim().slice(0,12)}</span></td>
+      <td style="color:#888;font-size:11px">${r.cls}</td>
+      <td style="font-size:11px;color:#aaa;font-family:'JetBrains Mono',monospace">${new Date(r.date).toLocaleDateString('en-IN')}</td>
+      <td><span class="badge badge-p">${r.present}</span></td>
+      <td><span class="badge badge-a">${r.absent}</span></td>
+      <td><span class="badge badge-l">${r.leave}</span></td>
+      <td style="font-weight:700;font-family:'JetBrains Mono',monospace;color:${r.pct>=75?'#16a34a':'#dc2626'}">${r.pct}%</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+function updateAnalytics() {
+  const map = {};
+  records.forEach(r=>{
+    if(!map[r.faculty]) map[r.faculty]={present:0,total:0};
+    map[r.faculty].present+=r.present; map[r.faculty].total+=r.total;
+  });
+  const sorted = Object.entries(map).sort((a,b)=>(b[1].present/b[1].total)-(a[1].present/a[1].total));
+  document.getElementById('analytics-content').innerHTML = sorted.slice(0,8).map(([name,s])=>{
+    const pct = Math.round((s.present/s.total)*100);
+    const col = pct>=75?'#16a34a':pct>=50?'#d97706':'#dc2626';
+    const short = name.replace('H.O.D General Medicine','HOD').split(' ').slice(0,3).join(' ');
+    return `<div class="chart-bar-row">
+      <div class="chart-bar-label" title="${name}">${short}</div>
+      <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${pct}%;background:${col}"></div></div>
+      <div class="chart-bar-pct">${pct}%</div>
+    </div>`;
+  }).join('');
+}
+
+function exportToExcel() {
+  if (!records.length) { showToast('⚠ No records to export'); return; }
+  const wb = XLSX.utils.book_new();
+  const s1 = XLSX.utils.aoa_to_sheet([
+    ['Central Research Facility – Attendance Report'],
+    ['Generated:', new Date().toLocaleString('en-IN')],[],
+    ['#','Faculty','Subject','Class/Batch','Date','Time','Present','Absent','Leave','Total Students','Attendance %'],
+    ...records.map(r=>[r.id, r.faculty, r.subject, r.cls,
+      new Date(r.date).toLocaleDateString('en-IN'),
+      new Date(r.date).toLocaleTimeString('en-IN'),
+      r.present, r.absent, r.leave, r.total, r.pct+'%'])
+  ]);
+  s1['!cols']=[5,30,25,25,12,10,8,8,8,14,14].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb, s1, 'Session Summary');
+
+  const s2 = XLSX.utils.aoa_to_sheet([
+    ['Roll No','Student Name','Faculty','Subject','Class/Batch','Date','Attendance Status','Session ID'],
+    ...records.flatMap(r=>r.studentData.map(sd=>[
+      sd.roll, sd.name, r.faculty, r.subject, r.cls,
+      new Date(r.date).toLocaleDateString('en-IN'),
+      sd.status==='P'?'Present':sd.status==='A'?'Absent':'Leave',
+      '#'+String(r.id).padStart(3,'0')
+    ]))
+  ]);
+  s2['!cols']=[10,22,30,25,22,14,16,10].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb, s2, 'Student Detail');
+
+  const fmap={};
+  records.forEach(r=>{
+    if(!fmap[r.faculty]) fmap[r.faculty]={sessions:0,present:0,total:0};
+    fmap[r.faculty].sessions++; fmap[r.faculty].present+=r.present; fmap[r.faculty].total+=r.total;
+  });
+  const s3 = XLSX.utils.aoa_to_sheet([
+    ['Faculty Name','Sessions Taken','Total Present','Total Students','Avg Attendance %'],
+    ...Object.entries(fmap).map(([n,s])=>[n, s.sessions, s.present, s.total, Math.round((s.present/s.total)*100)+'%'])
+  ]);
+  s3['!cols']=[35,15,15,16,18].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb, s3, 'Faculty Summary');
+
+  XLSX.writeFile(wb, `CRF_Attendance_${new Date().toISOString().slice(0,10)}.xlsx`);
+  showToast('✓ Excel downloaded!');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-text').textContent = msg;
+  t.style.borderLeftWidth = '4px';
+  t.style.borderLeftColor = msg.includes('⚠') ? '#d97706' : '#16a34a';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+(function init() {
+  initStudents();
+  const now = new Date();
+  now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
+  document.getElementById('date-input').value = now.toISOString().slice(0,16);
+})();
+</script>
