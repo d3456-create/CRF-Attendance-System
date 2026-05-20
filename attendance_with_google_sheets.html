@@ -1,3 +1,4 @@
+
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -107,76 +108,6 @@
   </div>
   <div style="position:absolute;right:32px;top:50%;transform:translateY(-50%);">
     <div class="live-badge"><div class="live-dot"></div>LIVE</div>
-  </div>
-</div>
-
-<!-- GOOGLE SHEETS CONFIG BAR -->
-<div id="gs-config-bar" style="background:#fff;border-bottom:1px solid #e8e8e8;padding:10px 40px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-  <span style="font-size:12px;font-weight:700;color:#333;white-space:nowrap;">🟢 Google Sheets</span>
-  <input id="gs-url-input" type="text" placeholder="Paste your Apps Script Web App URL here…"
-    style="flex:1;min-width:260px;padding:7px 12px;border:1px solid #ddd;border-radius:7px;font-size:12px;font-family:'Inter',sans-serif;outline:none;color:#1a1a1a;background:#fafafa;" />
-  <button onclick="saveSheetConfig()" style="padding:7px 16px;border-radius:7px;border:none;background:linear-gradient(135deg,#8b0000,#c0001a);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;">Save URL</button>
-  <span id="gs-status" style="font-size:11px;color:#aaa;white-space:nowrap;">Not configured</span>
-  <button onclick="toggleConfigHelp()" style="padding:5px 10px;border-radius:6px;border:1px solid #ddd;background:#fafafa;color:#666;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;">? Setup Guide</button>
-</div>
-
-<!-- SETUP GUIDE (collapsible) -->
-<div id="gs-help" style="display:none;background:#fffbea;border-bottom:1px solid #fde68a;padding:16px 40px;">
-  <div style="max-width:800px;margin:0 auto;">
-    <p style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:10px;">📋 How to connect Google Sheets (one-time setup):</p>
-    <ol style="font-size:12px;color:#555;line-height:2;padding-left:18px;">
-      <li>Open <strong>Google Sheets</strong> → create a new sheet and name it <strong>Attendance</strong>.</li>
-      <li>Go to <strong>Extensions → Apps Script</strong>, paste the <strong>Apps Script code</strong> below, and click Save.</li>
-      <li>Click <strong>Deploy → New Deployment → Web App</strong>. Set <em>"Who has access"</em> to <strong>Anyone</strong>. Copy the URL.</li>
-      <li>Paste the URL above and click <strong>Save URL</strong>.</li>
-      <li>On first submit, Google will ask you to <strong>authorize</strong> — click Allow.</li>
-    </ol>
-    <p style="font-size:12px;font-weight:700;color:#92400e;margin-top:12px;margin-bottom:6px;">Apps Script Code — paste this in your Google Apps Script editor:</p>
-    <pre id="apps-script-code" style="background:#1e1e2e;color:#cdd6f4;padding:14px 16px;border-radius:8px;font-size:11px;overflow-x:auto;line-height:1.7;white-space:pre;">function doPost(e) {
-  try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-
-    // ── Sheet 1: Session Summary ──────────────────────────────────
-    var sheet1 = ss.getSheetByName("Session Summary") || ss.insertSheet("Session Summary");
-    if (sheet1.getLastRow() === 0) {
-      sheet1.appendRow(["#","Faculty","Subject","Class/Batch","Date","Time",
-                        "Present","Absent","Leave","Total","Attendance %"]);
-    }
-
-    // ── Sheet 2: Student Detail ───────────────────────────────────
-    var sheet2 = ss.getSheetByName("Student Detail") || ss.insertSheet("Student Detail");
-    if (sheet2.getLastRow() === 0) {
-      sheet2.appendRow(["Session #","Roll No","Student Name","Faculty",
-                        "Subject","Class/Batch","Date","Status"]);
-    }
-
-    var data = JSON.parse(e.postData.contents);
-    var d    = new Date(data.date);
-    var dateStr = Utilities.formatDate(d, Session.getScriptTimeZone(), "dd/MM/yyyy");
-    var timeStr = Utilities.formatDate(d, Session.getScriptTimeZone(), "HH:mm");
-    var sessionId = "#" + String(data.id).padStart(3,"0");
-
-    sheet1.appendRow([sessionId, data.faculty, data.subject, data.cls,
-                      dateStr, timeStr, data.present, data.absent,
-                      data.leave, data.total, data.pct + "%"]);
-
-    data.studentData.forEach(function(sd) {
-      sheet2.appendRow([sessionId, sd.roll, sd.name, data.faculty,
-                        data.subject, data.cls, dateStr,
-                        sd.status === "P" ? "Present" : sd.status === "A" ? "Absent" : "Leave"]);
-    });
-
-    return ContentService
-      .createTextOutput(JSON.stringify({status:"ok"}))
-      .setMimeType(ContentService.MimeType.JSON);
-  } catch(err) {
-    return ContentService
-      .createTextOutput(JSON.stringify({status:"error", message: err.toString()}))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
-</pre>
-    <button onclick="copyAppsScript()" style="margin-top:8px;padding:6px 14px;border-radius:6px;border:1px solid #d97706;background:#fffbea;color:#92400e;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">📋 Copy Apps Script Code</button>
   </div>
 </div>
 
@@ -308,68 +239,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-// ── Google Sheets Integration ──────────────────────────────────────────
-let gsWebAppUrl = localStorage.getItem('gs_web_app_url') || '';
-
-function saveSheetConfig() {
-  const url = document.getElementById('gs-url-input').value.trim();
-  if (!url.startsWith('https://script.google.com/')) {
-    showToast('⚠ Please enter a valid Apps Script URL');
-    return;
-  }
-  gsWebAppUrl = url;
-  localStorage.setItem('gs_web_app_url', url);
-  updateGsStatus('connected');
-  showToast('✓ Google Sheets URL saved!');
-}
-
-function updateGsStatus(state) {
-  const el = document.getElementById('gs-status');
-  if (state === 'connected')  { el.textContent = '✓ Connected'; el.style.color = '#16a34a'; }
-  else if (state === 'sending') { el.textContent = '⏳ Sending…'; el.style.color = '#d97706'; }
-  else if (state === 'error')   { el.textContent = '✗ Sync failed'; el.style.color = '#dc2626'; }
-  else                          { el.textContent = 'Not configured'; el.style.color = '#aaa'; }
-}
-
-function toggleConfigHelp() {
-  const h = document.getElementById('gs-help');
-  h.style.display = h.style.display === 'none' ? 'block' : 'none';
-}
-
-function copyAppsScript() {
-  const code = document.getElementById('apps-script-code').textContent;
-  navigator.clipboard.writeText(code).then(() => showToast('✓ Apps Script code copied!'));
-}
-
-async function syncToGoogleSheets(rec) {
-  if (!gsWebAppUrl) return; // silently skip if not configured
-  updateGsStatus('sending');
-  try {
-    await fetch(gsWebAppUrl, {
-      method: 'POST',
-      mode: 'no-cors',        // Apps Script doesn't set CORS headers on redirects
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(rec)
-    });
-    // no-cors means we can't read the response, assume success
-    updateGsStatus('connected');
-    showToast('✓ Synced to Google Sheets!');
-  } catch (err) {
-    updateGsStatus('error');
-    showToast('⚠ Google Sheets sync failed');
-    console.error('GS sync error:', err);
-  }
-}
-
-// Restore URL on load
-(function restoreGsUrl() {
-  if (gsWebAppUrl) {
-    document.getElementById('gs-url-input').value = gsWebAppUrl;
-    updateGsStatus('connected');
-  }
-})();
-// ───────────────────────────────────────────────────────────────────────
-
 const students = [
   {id:'ST001', name:'Anushree Tripathi'},
   {id:'ST002', name:'Saloni Martolia'},
@@ -450,7 +319,6 @@ function confirmSubmit() {
   records.push(rec);
   addActivity(rec); updateStats(); renderRecords(); updateAnalytics();
   showToast('✓ Attendance saved successfully!');
-  syncToGoogleSheets(rec);   // 🟢 push to Google Sheets
   markAll('P');
 }
 
